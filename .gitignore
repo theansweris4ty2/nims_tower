@@ -1,0 +1,28 @@
+# Nim compiler temporary files
+nimcache/
+# Generated HTML documentation
+htmldocs/
+
+# Nimble (Package Manager) specific
+# Local package dependencies
+nimbledeps/
+# Build artifacts from 'nimble build'
+build/
+# Generated package files
+nimble.develop
+nimble.paths
+
+# Executables
+# Excludes files without extensions (Linux/macOS binaries)
+*
+!*.*
+!*/
+# Excludes Windows binaries
+*.exe
+*.dll
+
+# Development Environment
+.vscode/
+.idea/
+*.swp
+*~

@@ -1,0 +1,135 @@
+import std/[random, strformat], entities, naylib
+
+proc attack*[T: Player|Enemy, U: Player|Enemy](ent1:T, ent2: var U) =
+    ent2.health -= rand(int32(1) .. ent1.damage)
+
+proc heal*(p: var Player, i: Item) = 
+    if i.healingPoints > 0:
+        p.health += i.healingPoints
+    else:
+        return
+
+proc pickUpItem*(p: var Player, i: Item) = 
+    p.inventory.add(i)
+
+# TODO Swim logic - might need separate swim function to include movement, time limits, damage, and death logic
+
+proc checkVerticalCollisions*(p: var Player, tiles: seq[Tile], screenHeight: int32) =
+    if p.y + float32(p.height) >= float32(screenHeight):
+        p.onGround = true
+    if p.y > float32(screenHeight):
+        p.y -= float32(p.height)
+    for tile in tiles:
+        if checkCollisionRecs(Rectangle(x: p.x, y: p.y, width: float32(p.width), height: float32(p.height)), tile.rec):
+            if p.y < tile.rec.y:
+                p.onGround = true
+            if p.y > tile.rec.y:
+                p.onGround = false
+                p.jumping = false
+            
+        
+
+proc checkHorizontalCollisions*(p: var Player, tiles: seq[Tile], screenWidth: int32) =
+    for tile in tiles:
+
+        if checkCollisionRecs(Rectangle(x: p.x, y: p.y, width: float32(p.width), height: float32(p.height)), tile.rec):
+            if p.xVelocity > 0 and p.y  > tile.rec.y :
+                p.x -= float32(p.width/2)
+            if p.xVelocity > 0 and p.y + float32(p.height) > tile.rec.y + float32(10):
+                p.x -= float32(p.width/2)
+            
+            if p.xVelocity < 0 and p.y > tile.rec.y: 
+                p.x += float32(p.width/2)
+            if p.xVelocity < 0 and p.y + float32(p.height) > tile.rec.y + float32(10):
+                p.x += float32(p.width/2)
+            
+
+    if p.x + float32(p.width) >= float32(screenWidth):
+        p.x -= float32(p.width/2)
+    if p.x  <= float32(0):
+        p.x += float32(p.width/2)
+
+proc chase*(e: var Enemy, p: Player) =
+    if e.x < p.x:
+        e.x += float32(e.xVelocity)
+    if e.x > p.x:
+        e.x -= float32(e.xVelocity)
+    if e.y < p.y:
+        e.y += float32(e.yVelocity)
+    if e.y > p.y:
+        e.y -= float32(e.yVelocity)
+
+proc update*(p: var Player, tiles: seq[Tile], screenWidth: int32, screenHeight: int32, jumpTimer: var int32, e: var Enemy) =
+    p.yVelocity = 0  #necessary for gravity to work
+    var gravity: int32
+    #Walk logic
+    if isKeyDown(Right) and p.xVelocity < 15 and p.onGround:
+        p.xVelocity += 3
+    if isKeyDown(Left) and p.xVelocity > -15 and p.onGround:
+        p.xVelocity -= 3
+    #climb logic
+    if isKeyDown(Up):
+        p.yVelocity = -2
+    # if isKeyDown(Down):
+    #     p.yVelocity = 2
+    #jump logic
+    if isKeyDown(Space) and p.onGround:
+        p.onGround = false
+        p.jumping = true
+    
+    #gravity 
+    if p.y + float32(p.height) <= 750:
+        p.onGround = false
+    #intertia
+    if p.xVelocity > 0 and not isKeyDown(Right):
+        p.xVelocity -= 1
+    if p.xVelocity < 0 and not isKeyDown(Left):
+        p.xVelocity += 1
+    
+    
+    checkHorizontalCollisions(p, tiles, screenWidth)
+    checkVerticalCollisions(p, tiles, screenHeight)
+   
+   
+
+    #checks for conditions: falling, jumping, etc.
+    if not p.onGround:
+        gravity = 10
+    else:
+        gravity = 0
+    if jumpTimer > 50:
+        p.jumping = false
+        jumpTimer = 0
+    if p.jumping:
+        p.yVelocity -= 30
+        jumpTimer += int32(1)
+    
+    p.yVelocity += gravity
+    
+    p.y += float32(p.yVelocity) 
+    p.x += float32(p.xVelocity)
+
+    chase(e, p)
+    
+
+    
+    
+    
+    
+# This function is only for physics testing; I am not using procedural map generation. 
+proc generateRooms*(): Room = 
+    let numberExits = rand(8.. 16)
+    var tiles: seq[Tile]
+    for tile in 1 .. numberExits:
+        let x: float32 = float32(rand(0.. 968))
+        let y: float32 = float32(rand(400.. 718))
+        let width: float32 = float32(rand(40.. 100))
+        let height: float32 = float32(rand(40 .. 100))
+        add(tiles, Tile(rec: Rectangle(x: x, y: y, width: width, height: height), collider: true))
+    return Room(items: @[], enemies: @[], tiles: tiles, exits: int32(numberExits) )
+
+
+
+
+
+    
