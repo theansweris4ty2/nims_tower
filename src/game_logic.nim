@@ -1,11 +1,11 @@
-import std/[random, strformat], entities, naylib
+import std/[random, strformat, sequtils], entities, naylib, maps
 
 proc attack*[T: Player|Enemy, U: Player|Enemy](ent1:T, ent2: var U) =
     ent2.health -= rand(int32(1) .. ent1.damage)
 
 proc heal*(p: var Player, i: Item) = 
     if i.healingPoints > 0:
-        p.health += i.healingPoints
+        p.health.inc(i.healingPoints)
     else:
         return
 
@@ -59,6 +59,8 @@ proc chase*(e: var Enemy, p: Player) =
     if e.y > p.y:
         e.y -= float32(e.yVelocity)
 
+
+#Need to substitute tilemap for the generateed rooms used for testing. 
 proc update*(p: var Player, tiles: seq[Tile], screenWidth: int32, screenHeight: int32, jumpTimer: var int32, e: var Enemy) =
     p.yVelocity = 0  #necessary for gravity to work
     var gravity: int32
@@ -89,8 +91,7 @@ proc update*(p: var Player, tiles: seq[Tile], screenWidth: int32, screenHeight: 
     
     checkHorizontalCollisions(p, tiles, screenWidth)
     checkVerticalCollisions(p, tiles, screenHeight)
-   
-   
+
 
     #checks for conditions: falling, jumping, etc.
     if not p.onGround:
@@ -102,7 +103,7 @@ proc update*(p: var Player, tiles: seq[Tile], screenWidth: int32, screenHeight: 
         jumpTimer = 0
     if p.jumping:
         p.yVelocity -= 30
-        jumpTimer += int32(1)
+        inc(jumpTimer) 
     
     p.yVelocity += gravity
     
@@ -116,20 +117,39 @@ proc update*(p: var Player, tiles: seq[Tile], screenWidth: int32, screenHeight: 
     
     
     
-# This function is only for physics testing; I am not using procedural map generation. 
-proc generateRooms*(): Room = 
-    let numberExits = rand(8.. 16)
-    var tiles: seq[Tile]
-    for tile in 1 .. numberExits:
-        let x: float32 = float32(rand(0.. 968))
-        let y: float32 = float32(rand(400.. 718))
-        let width: float32 = float32(rand(40.. 100))
-        let height: float32 = float32(rand(40 .. 100))
-        add(tiles, Tile(rec: Rectangle(x: x, y: y, width: width, height: height), collider: true))
-    return Room(items: @[], enemies: @[], tiles: tiles, exits: int32(numberExits) )
 
 
 
+#[The functions below reed the tilemap array, uses index to determine coordinates of tile and value to determine type of tile: origin, conditions, e.g., collider, etc. The second function iterates of the new tilemap seq and draws it to the screen]#
+
+proc readTileMap*(tilemap: entities.Tilemap): seq[Tile] = 
+    var tiles: seq[Tile] = @[]
+    var imageX: int32
+    var imageY: int32
+    for index, val in tilemap.pairs:
+        #TODO add additional cases for the other types of tiles
+        case val:
+            of 1:
+                imageX = 0
+                imageY = 0
+                add(tiles, Tile(rec: Rectangle(x: float32(index mod 40) * 32, y: (float32(index/40) * 32), width: 32, height: 32), collider: true, imageX: imageX, imageY: imageY))
+            else: continue
+            # of 5:
+            #     imageX = 64
+            #     imageY = 0
+            #     add(tiles, Tile(rec: Rectangle(x: float32(int32(cIndex) * int32(16)), y: float32(int32(rIndex) * int32(16)), width: 16, height: 16), collider: true, imageX: imageX, imageY: imageY))
+    return tiles
+
+
+#This function draws the map from the tilesheet using drawTextureRec function - need to find naylib equivalent
+
+proc drawMap*(mapTiles: seq[Tile], tileSheet: Texture) =
+    for tile in mapTiles:
+        #case tile.id:
+        #of 
+        var source = Rectangle(x: tile.imageX.float32, y: tile.imageY.float32, width: 32, height: 32)
+        var pos = entities.Vector2(x: tile.rec.x, y: tile.rec.y)
+        drawTexture(tileSheet, source, pos, White )
 
 
     

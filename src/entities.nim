@@ -26,6 +26,8 @@ type Player* = object
     jumping*: bool
     inventory*: seq[Item]
 
+#Refactor Player and Enemy to have conditions in an Object variant, e.g., onGround, jumping, swimming; however, a union might not be the correct structure because certain condtions might co-exist
+
 type Enemy* = object
     species*: string
     health*: int32
@@ -42,7 +44,10 @@ type Tile* = object
     kind*: string
     rec*: Rectangle
     collider*: bool
-
+    imageX*: int32
+    imageY*: int32
+type 
+    Tilemap* = array[1200, int]
 
 type Room* = object
     items*: seq[Item]
@@ -53,6 +58,9 @@ type Room* = object
 type Game* = object
     player: var Player
     rooms: array[20, Room]
+
+type 
+    Vector2* = tuple[x: float32, y: float32] 
 
 #TODO create a tilemap type which will be a field in Level
 #TODO create a spriteSheet type that will be a field in player and enemy objects
