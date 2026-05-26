@@ -1,5 +1,4 @@
 import naylib
-export naylib
 
 type Item* = object
     kind*: string
@@ -26,7 +25,7 @@ type Player* = object
     jumping*: bool
     inventory*: seq[Item]
 
-#Refactor Player and Enemy to have conditions in an Object variant, e.g., onGround, jumping, swimming; however, a union might not be the correct structure because certain condtions might co-exist
+#TODO Refactor Player and Enemy to have conditions in an Object variant, e.g., onGround, jumping, swimming; however, a union might not be the correct structure because certain condtions might co-exist
 
 type Enemy* = object
     species*: string

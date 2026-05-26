@@ -1,4 +1,5 @@
-import std/[random, strformat, sequtils], entities, naylib, maps
+import std/[random], entities, naylib
+export naylib
 
 proc attack*[T: Player|Enemy, U: Player|Enemy](ent1:T, ent2: var U) =
     ent2.health -= rand(int32(1) .. ent1.damage)
@@ -26,6 +27,7 @@ proc checkVerticalCollisions*(p: var Player, tiles: seq[Tile], screenHeight: int
             if p.y > tile.rec.y:
                 p.onGround = false
                 p.jumping = false
+    
             
         
 
@@ -80,7 +82,7 @@ proc update*(p: var Player, tiles: seq[Tile], screenWidth: int32, screenHeight: 
         p.jumping = true
     
     #gravity 
-    if p.y + float32(p.height) <= 750:
+    if p.y + p.height.float32 <= screenHeight.float32:
         p.onGround = false
     #intertia
     if p.xVelocity > 0 and not isKeyDown(Right):
@@ -113,14 +115,10 @@ proc update*(p: var Player, tiles: seq[Tile], screenWidth: int32, screenHeight: 
     chase(e, p)
     
 
-    
-    
-    
-    
 
-
-
-#[The functions below reed the tilemap array, uses index to determine coordinates of tile and value to determine type of tile: origin, conditions, e.g., collider, etc. The second function iterates of the new tilemap seq and draws it to the screen]#
+#[The functions below reed the tilemap array, uses index to determine coordinates of tile and value to determine type of tile: origin, conditions, e.g., collider, etc. The second function iterates of the new tilemap seq and draws it to the screen
+TODO refactor readTileMap to read data from tmj - encoding/json library
+]#
 
 proc readTileMap*(tilemap: entities.Tilemap): seq[Tile] = 
     var tiles: seq[Tile] = @[]
@@ -132,7 +130,7 @@ proc readTileMap*(tilemap: entities.Tilemap): seq[Tile] =
             of 1:
                 imageX = 0
                 imageY = 0
-                add(tiles, Tile(rec: Rectangle(x: float32(index mod 40) * 32, y: (float32(index/40) * 32), width: 32, height: 32), collider: true, imageX: imageX, imageY: imageY))
+                add(tiles, Tile(rec: Rectangle(x: float32(index mod 40) * 32, y: (float32(index div 40) * 32), width: 32, height: 32), collider: true, imageX: imageX, imageY: imageY))
             else: continue
             # of 5:
             #     imageX = 64
@@ -145,8 +143,6 @@ proc readTileMap*(tilemap: entities.Tilemap): seq[Tile] =
 
 proc drawMap*(mapTiles: seq[Tile], tileSheet: Texture) =
     for tile in mapTiles:
-        #case tile.id:
-        #of 
         var source = Rectangle(x: tile.imageX.float32, y: tile.imageY.float32, width: 32, height: 32)
         var pos = entities.Vector2(x: tile.rec.x, y: tile.rec.y)
         drawTexture(tileSheet, source, pos, White )
