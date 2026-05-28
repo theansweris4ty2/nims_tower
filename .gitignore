@@ -13,10 +13,11 @@ nimble.develop
 nimble.paths
 
 #Game Assets
-.assets/
+/assets
 
 #dev notes
-.notes/
+*.md
+*.excalidraw.json
 
 # Executables
 # Excludes files without extensions (Linux/macOS binaries)

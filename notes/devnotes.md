@@ -1,40 +1,38 @@
 
-<h1>Dimensions
+<h1 style = "color: firebrick">Inspirations</h1>
 
-<h2> Screen Dimensions
-<ul>
-<li> ratio 4/3 
-<li> 1280 x 960
-<li> 40 tiles by 30 tiles
+<ol style = "font-size: 20px; color: Indigo">
+<li>Caves of Qud</li>
+<li> Ultima 3</li>
+<li>Dwarf Fortress</li>
+</ol>
+
+
+
+
+
+<h1 style = "color: red">Enemies</h1>
+
+<h2 style = "color: green; text-decoration: underline"> Henchman</h3>
+
+<h2 style = "color: purple; font-style: bold; text-decoration: underline">BOSSES</h2>
+
+
+<h1 style = "font-style: Bold; color: deeppink">MENUS
+
+<h2 style = "color: orangered">Main Menu
+
+<h2 style = "color: darkturquoise"> Character Creation</h1>
+
+<ul  style = "font-size: 20px" >
+<li style = "color: Maroon"> Attributes</li>
+<li style = "color: Teal"> Class
+<li style = "color: Fuchsia" >Equipment</li>
+<li style = "color: Olive">Mutations</li>
+<li style = "color: Gold">Cybernetics
 </ul>
 
-<h2>Tilesheet Dimensions:
-<ul>
-<li> tile size 32 x 32 </li>
-<li> tilesheet 512 x 256</li>
-<li> 16 tiles wide 8 tiles high
-<li> 128 distinct tiles
-</ul>
+<h2 style = "color: darkorchid">Save Menu
 
 
-<h1> Assets Info
-
-<h2> Test Tileset
-<h3 style = "color: blue"> CaveTileset 1.0 by xvideosman</h3>
-
-==============================
-
-This work is licensed under the Creative Commons Attribution-ShareAlike 1.0 Generic License. To view a copy of this license, visit http://creativecommons.org/licenses/by-sa/1.0/
-
-
-<h3> Tile IDs
-<ul>
-<li> 1-3 Brown Rock
-<li> 4 Brown Rock w/edge
-<li> 5-7 Gray Rock
-<li> 8 Gray Rock w/edge
-<li> 9-11 Gold Rock
-<li> 12 Gold Rock w/edge
-</ul>
-
-
+  

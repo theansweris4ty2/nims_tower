@@ -1,8 +1,8 @@
-import std/[random], entities, naylib
+import std/[random], entities, naylib, maps
 export naylib
 
 proc attack*[T: Player|Enemy, U: Player|Enemy](ent1:T, ent2: var U) =
-    ent2.health -= rand(int32(1) .. ent1.damage)
+    ent2.health.dec(rand(int32(1) .. ent1.damage))
 
 proc heal*(p: var Player, i: Item) = 
     if i.healingPoints > 0:
@@ -63,23 +63,33 @@ proc chase*(e: var Enemy, p: Player) =
 
 
 #Need to substitute tilemap for the generateed rooms used for testing. 
-proc update*(p: var Player, tiles: seq[Tile], screenWidth: int32, screenHeight: int32, jumpTimer: var int32, e: var Enemy) =
+proc update*(p: var Player, tiles: seq[Tile], screenWidth: int32, screenHeight: int32, jumpTimer: var int32, e: var Enemy, camera: var Camera2D) =
     p.yVelocity = 0  #necessary for gravity to work
     var gravity: int32
+    
+    #player controls
+    #TODO Add code for using a game controller
     #Walk logic
     if isKeyDown(Right) and p.xVelocity < 15 and p.onGround:
-        p.xVelocity += 3
+        # p.xVelocity += 3
+        camera.target.x += float32(3)
     if isKeyDown(Left) and p.xVelocity > -15 and p.onGround:
-        p.xVelocity -= 3
-    #climb logic
+        # p.xVelocity -= 3
+        camera.target.x -= float32(3)
+    #TODO finish climb logic. Check for collision with ladder tile. 
     if isKeyDown(Up):
-        p.yVelocity = -2
-    # if isKeyDown(Down):
-    #     p.yVelocity = 2
+        # p.yVelocity = -2
+        camera.target.y -= float32(3)
+    if isKeyDown(Down):
+        # p.yVelocity = 2
+        camera.target.y += float32(3)
     #jump logic
     if isKeyDown(Space) and p.onGround:
         p.onGround = false
         p.jumping = true
+    
+    
+    #TODO refine physics below to make jumping and running feel better. Work on double jump/wall climb physics
     
     #gravity 
     if p.y + p.height.float32 <= screenHeight.float32:
@@ -116,36 +126,29 @@ proc update*(p: var Player, tiles: seq[Tile], screenWidth: int32, screenHeight: 
     
 
 
-#[The functions below reed the tilemap array, uses index to determine coordinates of tile and value to determine type of tile: origin, conditions, e.g., collider, etc. The second function iterates of the new tilemap seq and draws it to the screen
-TODO refactor readTileMap to read data from tmj - encoding/json library
-]#
+#TODO add functionality to readTileMap proc so that it adds attributes to tiles, e.g., collider, ladder, water, hazards, etc.
+#TODO refactor readTileMap to read data from tmj - encoding/json library
 
-proc readTileMap*(tilemap: entities.Tilemap): seq[Tile] = 
+
+proc readTileMap*(tilemap: Tilemap): seq[Tile] = 
     var tiles: seq[Tile] = @[]
     var imageX: int32
     var imageY: int32
     for index, val in tilemap.pairs:
         #TODO add additional cases for the other types of tiles
-        case val:
-            of 1:
-                imageX = 0
-                imageY = 0
-                add(tiles, Tile(rec: Rectangle(x: float32(index mod 40) * 32, y: (float32(index div 40) * 32), width: 32, height: 32), collider: true, imageX: imageX, imageY: imageY))
-            else: continue
-            # of 5:
-            #     imageX = 64
-            #     imageY = 0
-            #     add(tiles, Tile(rec: Rectangle(x: float32(int32(cIndex) * int32(16)), y: float32(int32(rIndex) * int32(16)), width: 16, height: 16), collider: true, imageX: imageX, imageY: imageY))
+    
+        imageY = int32(((val - 1) div 16) * 16)
+        imageX = int32(((val - 1) mod 16) * 16)
+        
+        add(tiles, Tile(rec: Rectangle(x: float32(index mod 80) * 16, y: (float32(index div 80) * 16), width: 16, height: 16), collider: true, imageX: imageX, imageY: imageY))
     return tiles
 
-
-#This function draws the map from the tilesheet using drawTextureRec function - need to find naylib equivalent
 
 proc drawMap*(mapTiles: seq[Tile], tileSheet: Texture) =
     for tile in mapTiles:
         var source = Rectangle(x: tile.imageX.float32, y: tile.imageY.float32, width: 32, height: 32)
-        var pos = entities.Vector2(x: tile.rec.x, y: tile.rec.y)
+        var pos = Vector2(x: tile.rec.x, y: tile.rec.y)
         drawTexture(tileSheet, source, pos, White )
 
 
-    
+#TODO Create a master draw function that calls the individual functions for drawing the different map layers, the player, NPCs, and enemies.   
